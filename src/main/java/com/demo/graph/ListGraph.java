@@ -38,7 +38,7 @@ public class ListGraph<E> {
         if(this.adjList != null){
             System.out.println("只能一次性添加所有元素，请重新新建图");
         }
-        this.adjList = new VertexNode[elements.length + 1];
+        this.adjList = new VertexNode[elements.length];
         this.unDirectEdgeNum = 0;
         this.vertexNum = elements.length;
 
@@ -70,48 +70,81 @@ public class ListGraph<E> {
      */
     public void addDirectedEdge(int beginIndex,int endIndex){
 
-        EdgeNode firArc = this.adjList[beginIndex].firArc;
-        while (firArc != null){
-            firArc = firArc.nextArc;
-            if(firArc.adjIndex == endIndex){//已存储该指向信息，直接忽略本次添加有向边
+        if(beginIndex >= this.vertexNum || endIndex >= this.vertexNum){
+            System.out.println("请检查beginIndex和endIndex");
+        }
+
+        EdgeNode firArc = this.adjList[beginIndex].firArc;//边的头结点
+
+        EdgeNode currentEdgeNode = firArc;
+        EdgeNode parentEdgeNode = firArc;
+        while (currentEdgeNode != null){
+            if(currentEdgeNode.adjIndex == endIndex){//已存储该指向信息，直接忽略本次添加有向边
                 return;
             }
+            parentEdgeNode = currentEdgeNode;
+            currentEdgeNode = currentEdgeNode.nextArc;
         }
-        firArc = new EdgeNode();
-        firArc.adjIndex = endIndex;
+        currentEdgeNode = new EdgeNode();
+        currentEdgeNode.adjIndex = endIndex;
+        //如果是该顶点的第一条边，则直接新增头结点
+        if(firArc == null)
+            this.adjList[beginIndex].firArc = currentEdgeNode;
+        else
+            parentEdgeNode.nextArc = currentEdgeNode;
 
         this.directEdgeNum = this.directEdgeNum + 1;
     }
 
     /**
-     * 深度优先搜索遍历，起始点为VertexNode[0]
+     * 深度优先搜索遍历，起始点为VertexNode[0]，支持连通图和非连通图
      */
     public void depthFirstTraversal(){
 
         //重置是否访问字段为false
-        for (int i = 0; i <this.adjList.length;i++){
+        for (int i = 0; i < this.adjList.length;i++){
             this.adjList[i].isVisited = false;
         }
 
         //开始遍历
-        DFS(this.adjList[0]);
+        for (int i = 0; i < this.adjList.length;i++){
+            if(this.adjList[i].isVisited == false)
+                DFS(this.adjList[i]);
+        }
 
     }
 
     /**
-     * 深度遍历递归访问
+     * 连通图的深度遍历递归访问，退出递归的条件为所有与 v 有路径相通的顶点都被访问到
      */
-    private void DFS(VertexNode node){
-        System.out.println(node.element);
-        node.isVisited = true;
+    private void DFS(VertexNode currentNode){
 
-        EdgeNode p = node.firArc;//取得顶点对应边的头指针
+        //访问节点
+        if(currentNode.isVisited == false){
+            System.out.println(currentNode.element);
+            currentNode.isVisited = true;
+        }
+
+        EdgeNode firArc = currentNode.firArc;//取得顶点对应边的头指针
+        if(firArc == null){//该顶点没有出度
+           return;
+        }
+        //遍历该顶点 v 对应的链表,如果所有与 v 有路径相通的顶点都被访问到，则退出递归
+        while (firArc != null){
+            if(this.adjList[firArc.adjIndex].isVisited == false)//还有节点未访问，跳出链表遍历
+                break;
+            firArc = firArc.nextArc;
+            if(firArc == null)//已遍历完毕，退出递归
+                return;
+
+        }
+
+        EdgeNode p = firArc;
         while (p != null){
-            if(node.isVisited != true){
-                DFS(this.adjList[p.adjIndex]);
-            }
+            DFS(this.adjList[p.adjIndex]);
             p = p.nextArc;
         }
+
     }
 
     /**
@@ -124,31 +157,23 @@ public class ListGraph<E> {
 
     /**
      * 测试方法
+     * 为了测试方便，将数字和index设置为一样。现实中，index和element的值可以不一样
      * @param args
      */
     public static void main(String[] args){
         ListGraph<Integer> graph = new ListGraph();
-        Integer[] elements = {0,1,2,3,4};
+        Integer[] elements = {0,1,2,3,4,5,6};
         
         //添加节点
         graph.addElements(elements);
         //添加边
-        graph.addUndirectedEdge(0,1);
-        graph.addUndirectedEdge(0,4);
-        graph.addUndirectedEdge(1,2);
-        graph.addUndirectedEdge(1,3);
-        graph.addUndirectedEdge(2,3);
-        graph.addUndirectedEdge(3,4);
-        graph.addUndirectedEdge(1,4);
+        graph.addDirectedEdge(6,1);
+        graph.addDirectedEdge(6,5);
+        graph.addDirectedEdge(6,3);
+        graph.addDirectedEdge(6,4);
+        graph.addDirectedEdge(4,6);
 
         graph.depthFirstTraversal();
 
-        int[] a = new int[2];
-        System.out.println("a[0]:" + a[0]);
-        a[1] = 1;
-        System.out.println("length:" + a.length);
-
     }
-
-
 }
