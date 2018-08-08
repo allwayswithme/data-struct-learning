@@ -1,6 +1,9 @@
 package com.demo.graph;
 
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * 图的实现-邻接表存储结构
  */
@@ -115,7 +118,7 @@ public class ListGraph<E> {
     }
 
     /**
-     * 连通图的深度遍历递归访问，退出递归的条件为所有与 v 有路径相通的顶点都被访问到
+     * 连通图或者单个顶点的深度遍历递归访问，退出递归的条件为所有与 v 有路径相通的顶点都被访问到
      */
     private void DFS(VertexNode currentNode){
 
@@ -126,7 +129,7 @@ public class ListGraph<E> {
         }
 
         EdgeNode firArc = currentNode.firArc;//取得顶点对应边的头指针
-        if(firArc == null){//该顶点没有出度
+        if(firArc == null){//该顶点没有出度或者为单个顶点
            return;
         }
         //遍历该顶点 v 对应的链表,如果所有与 v 有路径相通的顶点都被访问到，则退出递归
@@ -152,6 +155,47 @@ public class ListGraph<E> {
      */
     public void breadthFirstTraversal(){
 
+        //重置是否访问字段为false
+        for (int i = 0; i < this.adjList.length;i++){
+            this.adjList[i].isVisited = false;
+        }
+
+        //开始遍历
+        for (int i = 0; i < this.adjList.length;i++){
+            if(this.adjList[i].isVisited == false){
+                BFS(this.adjList[i],i);
+            }
+
+        }
+
+    }
+
+    /**
+     * 只支持连通图或者单个顶点的广度优先搜索遍历
+     */
+    private void BFS(VertexNode currentNode,int index){
+
+        //访问该节点
+        if(currentNode.isVisited == false){
+            System.out.println(currentNode.element);
+            currentNode.isVisited = true;
+        }
+
+        Queue<Integer> queue = new LinkedList();
+        queue.add(index);
+        while (!queue.isEmpty()){
+            int currentIndex = queue.poll();
+            EdgeNode p = this.adjList[currentIndex].firArc;
+            while (p != null){
+                if(this.adjList[p.adjIndex].isVisited == false){
+                    System.out.println(this.adjList[p.adjIndex].element);
+                    this.adjList[p.adjIndex].isVisited = true;
+                    queue.add(p.adjIndex);
+                }
+                p = p.nextArc;
+            }
+        }
+
     }
 
 
@@ -168,12 +212,13 @@ public class ListGraph<E> {
         graph.addElements(elements);
         //添加边
         graph.addDirectedEdge(6,1);
-        graph.addDirectedEdge(6,5);
         graph.addDirectedEdge(6,3);
+        graph.addDirectedEdge(6,5);
         graph.addDirectedEdge(6,4);
         graph.addDirectedEdge(4,6);
 
-        graph.depthFirstTraversal();
+        //graph.depthFirstTraversal();
+        graph.breadthFirstTraversal();
 
     }
 }
