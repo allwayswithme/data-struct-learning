@@ -7,7 +7,7 @@ import java.util.Queue;
 /**
  * 图的实现-邻接表存储结构
  */
-public class ListGraph<E> {
+public class ListGraph<E> implements DirectGraph<E>,UnDirectGraph<E> {
 
     /**
      * 邻接表的顶点内部类
@@ -210,15 +210,20 @@ public class ListGraph<E> {
         
         //添加节点
         graph.addElements(elements);
+
         //添加边
-        graph.addDirectedEdge(6,1);
+        graph.addDirectedEdge(1,6);
         graph.addDirectedEdge(6,3);
-        graph.addDirectedEdge(6,5);
+        graph.addDirectedEdge(6,2);
         graph.addDirectedEdge(6,4);
         graph.addDirectedEdge(4,6);
+        graph.addDirectedEdge(1,5);
+        graph.addDirectedEdge(0,1);
+        graph.addDirectedEdge(6,1);
+        graph.addDirectedEdge(1,0);
 
-        //graph.depthFirstTraversal();
-        graph.breadthFirstTraversal();
+        graph.depthFirstTraversal();
+        //graph.breadthFirstTraversal();
 
     }
 }
